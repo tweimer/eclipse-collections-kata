@@ -10,9 +10,7 @@
 
 package org.eclipse.collections.companykata;
 
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.predicate.Predicate;
-import org.eclipse.collections.api.block.predicate.Predicate2;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.partition.list.PartitionMutableList;
 import org.eclipse.collections.impl.test.Verify;
@@ -48,7 +46,7 @@ public class Exercise2Test extends CompanyDomainForKata
     @Test
     public void customerFromLondonPredicate()
     {
-        Predicate<Customer> predicate = null;
+        Predicate<Customer> predicate = customer -> "London".equals(customer.getCity());
 
         String predicateClass = predicate.getClass().getSimpleName();
         Assert.assertTrue(
@@ -65,7 +63,8 @@ public class Exercise2Test extends CompanyDomainForKata
     @Test
     public void doAnyCustomersLiveInLondon()
     {
-        boolean anyCustomersFromLondon = false;
+        Predicate<Customer> predicate = customer -> "London".equals(customer.getCity());
+        boolean anyCustomersFromLondon = company.getCustomers().anySatisfy(predicate);
 
         Assert.assertTrue(anyCustomersFromLondon);
     }
@@ -73,7 +72,8 @@ public class Exercise2Test extends CompanyDomainForKata
     @Test
     public void doAllCustomersLiveInLondon()
     {
-        boolean allCustomersFromLondon = true;
+        Predicate<Customer> predicate = customer -> "London".equals(customer.getCity());
+        boolean allCustomersFromLondon = company.getCustomers().allSatisfy(predicate);
 
         Assert.assertFalse(allCustomersFromLondon);
     }
@@ -81,7 +81,8 @@ public class Exercise2Test extends CompanyDomainForKata
     @Test
     public void howManyCustomersLiveInLondon()
     {
-        int numberOfCustomerFromLondon = 0;
+        Predicate<Customer> predicate = customer -> "London".equals(customer.getCity());
+        int numberOfCustomerFromLondon = company.getCustomers().count(predicate);
 
         Assert.assertEquals("Should be 2 London customers", 2, numberOfCustomerFromLondon);
     }
@@ -89,7 +90,8 @@ public class Exercise2Test extends CompanyDomainForKata
     @Test
     public void getLondonCustomers()
     {
-        MutableList<Customer> customersFromLondon = null;
+        Predicate<Customer> predicate = customer -> "London".equals(customer.getCity());
+        MutableList<Customer> customersFromLondon = company.getCustomers().select(predicate);
 
         Verify.assertSize("Should be 2 London customers", 2, customersFromLondon);
     }
@@ -97,7 +99,8 @@ public class Exercise2Test extends CompanyDomainForKata
     @Test
     public void getCustomersWhoDontLiveInLondon()
     {
-        MutableList<Customer> customersNotFromLondon = null;
+        Predicate<Customer> predicate = customer -> !"London".equals(customer.getCity());
+        MutableList<Customer> customersNotFromLondon = company.getCustomers().select(predicate);
 
         Verify.assertSize("customers not from London", 1, customersNotFromLondon);
     }
@@ -108,7 +111,8 @@ public class Exercise2Test extends CompanyDomainForKata
     @Test
     public void getCustomersWhoDoAndDoNotLiveInLondon()
     {
-        PartitionMutableList<Customer> customers = null;
+        Predicate<Customer> predicate = customer -> "London".equals(customer.getCity());
+        PartitionMutableList<Customer> customers = company.getCustomers().partition(predicate);
 
         Verify.assertSize("Should be 2 London customers", 2, customers.getSelected());
         Verify.assertSize("customers not from London", 1, customers.getRejected());
