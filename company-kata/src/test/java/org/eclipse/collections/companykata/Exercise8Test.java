@@ -11,6 +11,7 @@
 package org.eclipse.collections.companykata;
 
 import java.util.Collections;
+import java.util.Comparator;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.bag.sorted.MutableSortedBag;
@@ -29,6 +30,7 @@ import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.SortedBags;
 import org.eclipse.collections.impl.test.Verify;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -60,7 +62,7 @@ public class Exercise8Test extends CompanyDomainForKata
     {
         Function0<Double> zeroValueFactory = () -> 0.0;
         Function2<Double, Customer, Double> aggregator = (result, customer) -> result + customer.getTotalOrderValue();
-        MutableMap<String, Double> map = null;
+        MutableMap<String, Double> map = company.getCustomers().aggregateBy(Customer::getCity, zeroValueFactory, aggregator);
 
         Verify.assertSize(2, map);
         Assert.assertEquals(446.25, map.get("London"), 0.0);
@@ -75,9 +77,7 @@ public class Exercise8Test extends CompanyDomainForKata
     @Test
     public void totalOrderValuesByCityUsingPrimitiveValues()
     {
-        Function<Customer, String> cityFunction = Customer::getCity;
-        DoubleFunction<Customer> totalOrderValueFunction = Customer::getTotalOrderValue;
-        ObjectDoubleMap<String> map = null;
+        ObjectDoubleMap<String> map = company.getCustomers().sumByDouble(Customer::getCity, Customer::getTotalOrderValue);
 
         Verify.assertSize(2, map);
         Assert.assertEquals(446.25, map.get("London"), 0.0);
@@ -94,7 +94,8 @@ public class Exercise8Test extends CompanyDomainForKata
     {
         Function0<Double> zeroValueFactory = () -> 0.0;
         Function2<Double, LineItem, Double> aggregator = (result, lineItem) -> result + lineItem.getValue();
-        MutableMap<String, Double> map = null;
+        MutableMap<String, Double> map = company.getOrders().flatCollect(Order::getLineItems)
+                .aggregateBy(LineItem::getName, zeroValueFactory, aggregator);
 
         Verify.assertSize(12, map);
         Assert.assertEquals(100.0, map.get("shed"), 0.0);
@@ -109,9 +110,8 @@ public class Exercise8Test extends CompanyDomainForKata
     @Test
     public void totalOrderValuesByItemUsingPrimitiveValues()
     {
-        Function<LineItem, String> nameFunction = LineItem::getName;
-        DoubleFunction<LineItem> valueFunction = LineItem::getValue;
-        ObjectDoubleMap<String> map = null;
+        ObjectDoubleMap<String> map = company.getOrders().flatCollect(Order::getLineItems)
+                .sumByDouble(LineItem::getName, LineItem::getValue);
 
         Verify.assertSize(12, map);
         Assert.assertEquals(100.0, map.get("shed"), 0.0);
@@ -124,7 +124,9 @@ public class Exercise8Test extends CompanyDomainForKata
     @Test
     public void sortedOrders()
     {
-        MutableSortedBag<Double> orderedPrices = null;
+        MutableSortedBag<Double> orderedPrices = company.getOrders().flatCollect(Order::getLineItems)
+                .collect(LineItem::getValue).select(value -> value > 7.5)
+                .toSortedBag(Comparator.reverseOrder());
 
         var expectedPrices = SortedBags.mutable.with(
                 Collections.reverseOrder(), 500.0, 150.0, 120.0, 75.0, 50.0, 50.0, 12.5);
@@ -137,7 +139,10 @@ public class Exercise8Test extends CompanyDomainForKata
     @Test
     public void whoOrderedSaucers()
     {
-        MutableList<Customer> customersWithSaucers = null;
+        MutableList<Customer> customersWithSaucers = this.company
+                .getCustomers()
+                .select(customer -> customer.getOrders()
+                        .anySatisfy(order -> ListIterate.collect(order.getLineItems(), LineItem::getName).contains("saucer")));
 
         Verify.assertSize("customers with saucers", 2, customersWithSaucers);
     }
@@ -149,7 +154,7 @@ public class Exercise8Test extends CompanyDomainForKata
     public void ordersByCustomerUsingAsMap()
     {
         MutableMap<String, MutableList<Order>> customerNameToOrders =
-                this.company.getCustomers().toMap(null, null);
+                this.company.getCustomers().toMap(Customer::getName, Customer::getOrders);
 
         Assert.assertNotNull("customer name to orders", customerNameToOrders);
         Verify.assertSize("customer names", 3, customerNameToOrders);

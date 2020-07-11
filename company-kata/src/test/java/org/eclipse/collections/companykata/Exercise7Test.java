@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.junit.Assert;
 import org.junit.Test;
 
+
 /**
  * Below are links to APIs that may be helpful during these exercises.
  *
@@ -40,7 +41,7 @@ public class Exercise7Test extends CompanyDomainForKata
     @Test
     public void customersByCity()
     {
-        MutableListMultimap<String, Customer> multimap = null;
+        MutableListMultimap<String, Customer> multimap = company.getCustomers().groupBy(Customer::getCity);
 
         var expectedLiphookList = Lists.mutable.with("Mary").collect(this.company::getCustomerNamed);
         var expectedLondonList = Lists.mutable.with("Fred", "Bill").collect(this.company::getCustomerNamed);
@@ -55,17 +56,8 @@ public class Exercise7Test extends CompanyDomainForKata
     @Test
     public void itemsBySuppliers()
     {
-        MutableMultimap<String, Supplier> itemsToSuppliers = null;
+        MutableMultimap<String, Supplier> itemsToSuppliers = ArrayIterate.groupByEach(company.getSuppliers(), s -> ArrayIterate.collect(s.getItemNames(), name -> name));
 
         Verify.assertIterableSize("should be 2 suppliers for sofa", 2, itemsToSuppliers.get("sofa"));
-    }
-
-    /**
-     * Delete this whole method when you're done. It's just a reminder.
-     */
-    @Test
-    public void reminder()
-    {
-        Assert.fail("Refactor setUpCustomersAndOrders() in the super class to not have so much repetition.");
     }
 }
