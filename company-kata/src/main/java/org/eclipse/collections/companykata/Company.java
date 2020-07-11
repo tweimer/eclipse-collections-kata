@@ -55,13 +55,8 @@ public class Company
      */
     public MutableList<Order> getOrders()
     {
-        Assert.fail("Refactor this code to use Eclipse Collections as part of Exercise 3");
-        MutableList<Order> orders = Lists.mutable.empty();
-        for (Customer customer : this.customers)
-        {
-            orders.addAll(customer.getOrders());
-        }
-        return orders;
+        // Assert.fail("Refactor this code to use Eclipse Collections as part of Exercise 3");
+        return customers.flatCollect(Customer::getOrders);
     }
 
     public Customer getMostRecentCustomer()
