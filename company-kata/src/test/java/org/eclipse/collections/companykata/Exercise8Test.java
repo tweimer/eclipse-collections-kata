@@ -170,7 +170,12 @@ public class Exercise8Test extends CompanyDomainForKata
     @Test
     public void mostExpensiveItem()
     {
-        MutableListMultimap<Double, Customer> multimap = null;
+        MutableListMultimap<Double, Customer> multimap = this.company
+                .getCustomers()
+                .groupBy(customer -> customer.getOrders()
+                        .flatCollect(Order::getLineItems)
+                        .collectDouble(LineItem::getValue)
+                        .max());
 
         Verify.assertSize(3, multimap);
         Verify.assertSize(2, multimap.keysView());
